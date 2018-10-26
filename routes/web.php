@@ -41,4 +41,3 @@ $router->post( '/register' , 'RegistrationController@store' ) ;
 $router->delete( '/groups/{id}' , 'GroupsController@remove' ) ;
 $router->delete( '/person/{id}' , 'PeopleController@remove' ) ;
 $router->delete( '/register/{id}' , 'RegistrationController@remove' ) ;
-
