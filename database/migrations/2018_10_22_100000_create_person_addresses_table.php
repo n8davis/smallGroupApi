@@ -25,6 +25,8 @@ class CreatePersonAddressesTable extends Migration
             $table->string('city' );
             $table->string('state' );
             $table->string('zip' );
+            $table->integer('person_id' );
+            $table->index(['line1', 'person_id']);
             $table->timestamps();
         });
     }

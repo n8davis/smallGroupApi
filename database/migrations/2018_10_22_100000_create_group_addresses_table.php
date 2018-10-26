@@ -25,6 +25,8 @@ class CreateGroupAddressesTable extends Migration
             $table->string('city' );
             $table->string('state' );
             $table->string('zip' );
+            $table->integer('group_id' );
+            $table->index(['group_id', 'line1']);
             $table->timestamps();
         });
     }

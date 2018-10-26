@@ -12,100 +12,85 @@ namespace App\Http\Controllers;
 use App\Model\Person;
 use App\SmallGroup\Response;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Schema;
 
 class PeopleController extends Controller
 {
-    /** @var Person $person */
-    private $person;
-    
+
     /**
-     * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function index( Request $request )
+    public function index()
     {
-        return response( )->json( Person::all() ,Response::SUCCESS ) ;
+
+        $this->model( new Person() );
+
+        return response( )->json( $this->all() ,Response::SUCCESS ) ;
     }
 
     /**
      * @param $id
-     * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function show( $id , Request $request ){
-        return response()->json( Person::find( $id ) , Response::SUCCESS ) ;
+    public function show( $id ){
+
+        $this->model( Person::find( $id ) );
+
+        if( is_null( $this->model() ) ) return response()->json( [ 'errors' => 'Not Found' ] , Response::NOT_FOUND );
+
+        return response()->json( $this->model() ) ;
     }
 
     /**
      * @param $id
-     * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function update( $id , Request $request ){
+    public function update( $id ){
 
         $person = Person::find( $id );
-        $this->setPerson( $person );
+        $this->model( $person );
 
-        if( ! isset( $person ) ) return response()->json( false , Response::SUCCESS ) ;
+        if( ! isset( $person ) ) return response()->json( [ 'errors' => 'Not Found'] , Response::NOT_FOUND ) ;
 
         return response()->json( $this->upsert() , Response::UPDATED ) ;
     }
 
     /**
+     * Groups Person has registered for
+     *
      * @param $id
-     * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function remove( $id ,  Request $request ){
+    public function groups( $id )
+    {
+        /** @var Person  $person */
+        $person = Person::find( $id );
+
+        if( ! isset( $person ) ) response()->json( [] , Response::NOT_FOUND ) ;
+
+        return response()->json( $person->groups , Response::SUCCESS ) ;
+    }
+
+    /**
+     * @param $id
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function remove( $id ){
 
         $person = Person::find( $id );
 
-        if( ! isset( $person ) ) return response()->json( false ) ;
+        if( ! isset( $person ) ) return response()->json( [] , Response::NOT_FOUND ) ;
 
         return response()->json( $person->delete() , Response::SUCCESS ) ;
     }
 
     /**
-     * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function store( Request $request )
+    public function store()
     {
-        $this->setPerson( new Person() );
+        $this->model( new Person() );
         return response()->json( $this->upsert() , Response::SUCCESS ) ;
     }
-
-    /**
-     * @return bool
-     */
-    public function upsert()
-    {
-
-        $this->getPerson()->email = $this->getRequest()->input( 'email' ) ;
-        $this->getPerson()->phone = $this->getRequest()->input( 'phone' ) ;
-        $this->getPerson()->name  = $this->getRequest()->input( 'name' ) ;
-
-        return $this->getPerson()->save();
-    }
-
-    /**
-     * @return Person
-     */
-    public function getPerson(): Person
-    {
-        return $this->person;
-    }
-
-    /**
-     * @param Person $person
-     * @return PeopleController
-     */
-    public function setPerson(Person $person): PeopleController
-    {
-        $this->person = $person;
-        return $this;
-    }
-    
-    
 
 }

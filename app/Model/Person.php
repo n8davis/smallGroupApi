@@ -14,7 +14,7 @@ use Illuminate\Support\Carbon;
 /**
  * Class Person
  * @package App\Model
- * @property HasManyThrough|Group $groups
+ * @property HasManyThrough|Group[] $groups
  * @property integer $id
  * @property string $name
  * @property string $email
@@ -25,6 +25,8 @@ use Illuminate\Support\Carbon;
 class Person extends AbstractModel
 {
 
+    protected $fillable = [ 'email' ];
+
     /**
      * @return HasManyThrough
      */
@@ -33,11 +35,23 @@ class Person extends AbstractModel
         return $this->hasManyThrough(
             'App\Model\Group', // groups
             'App\Model\Registration', // registration
-            'people_id', // Foreign key on registration table...
-            'groups_id', // Foreign key on groups table...
+            'person_id', // Foreign key on registration table...
+            'id', // Foreign key on groups table...
             'id', // Local key on people table...
-            'id' // Local key on registration table...
+            'group_id' // Local key on registration table...
         );
+    }
+
+    /**
+     * @return array
+     */
+    public function toArray()
+    {
+        $person = parent::toArray();
+
+        $person[ 'groups' ] = $this->groups;
+
+        return $person;
     }
 
 }

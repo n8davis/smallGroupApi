@@ -23,6 +23,7 @@ class CreatePeopleTable extends Migration
             $table->string('name' , 100 );
             $table->string('email' , 255 );
             $table->string('phone' , 20 );
+            $table->index(['email']);
             $table->timestamps();
         });
     }

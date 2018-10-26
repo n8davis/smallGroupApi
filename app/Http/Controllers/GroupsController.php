@@ -15,96 +15,82 @@ use Illuminate\Http\Request;
 
 class GroupsController extends Controller
 {
-    /** @var Group $group */
-    private $group;
 
     /**
-     * @param Request $request
+     *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function index( Request $request )
+    public function index()
     {
-        return response( )->json( Group::all() , Response::SUCCESS ) ;
+        $this->model( new Group() );
+
+        return response( )->json( $this->all() ,Response::SUCCESS ) ;
     }
 
     /**
      * @param $id
-     * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function show( $id , Request $request ){
-        return response()->json( Group::find( $id ) , Response::SUCCESS ) ;
+    public function show( $id ){
+
+        $this->model( Group::find( $id ) );
+
+        if( is_null( $this->model() ) ) return response()->json( [ 'errors' => 'Not Found' ] , Response::NOT_FOUND );
+
+        return response()->json( $this->model() ) ;
     }
 
     /**
      * @param $id
-     * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function update( $id , Request $request ){
+    public function update( $id ){
 
         $group = Group::find( $id );
-        $this->setGroup( $group );
+        $this->model( $group );
 
-        if( ! isset( $group ) ) return response()->json( false , Response::SUCCESS ) ;
+        if( ! isset( $group ) ) return response()->json( [] , Response::NOT_FOUND ) ;
 
         return response()->json( $this->upsert() , Response::UPDATED  ) ;
     }
 
     /**
-     * @param Request $request
+     *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function store( Request $request )
+    public function store()
     {
-        $this->setGroup( new Group() );
+        $this->model( new Group() );
         return response()->json( $this->upsert() , Response::UPDATED  ) ;
     }
 
     /**
+     * People in Group
+     *
      * @param $id
-     * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function remove( $id ,  Request $request ){
+    public function people( $id )
+    {
+        /** @var Group $group */
+        $group = Group::find( $id ) ;
+
+        if( ! isset( $group ) ) return response()->json( [] , Response::NOT_FOUND ) ;
+
+        return response()->json( $group->people , Response::SUCCESS ) ;
+    }
+
+    /**
+     * @param $id
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function remove( $id ){
 
         $group = Group::find( $id );
 
-        if( ! isset( $group ) ) return response()->json( false ) ;
+        if( ! isset( $group ) ) return response()->json( [] , Response::NOT_FOUND ) ;
 
         return response()->json( $group->delete() , Response::SUCCESS  ) ;
     }
-
-    /**
-     * @return bool
-     */
-    public function upsert()
-    {
-
-        $this->getGroup()->image       = $this->getRequest()->input( 'image' ) ;
-        $this->getGroup()->description = $this->getRequest()->input( 'description' ) ;
-        $this->getGroup()->name        = $this->getRequest()->input( 'name' ) ;
-
-        return $this->getGroup()->save();
-    }
-
-    /**
-     * @return Group
-     */
-    public function getGroup(): Group
-    {
-        return $this->group;
-    }
-
-    /**
-     * @param Group $group
-     * @return GroupsController
-     */
-    public function setGroup(Group $group): GroupsController
-    {
-        $this->group = $group;
-        return $this;
-    }
-
 
 }

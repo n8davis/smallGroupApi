@@ -14,8 +14,13 @@ use App\SmallGroup\Response;
 class RegistrationController extends Controller
 {
 
-    /** @var Registration $registration */
-    protected $registration ;
+    public function index()
+    {
+        $this->model( new Registration() );
+
+        return response( )->json( $this->all() ,Response::SUCCESS ) ;
+
+    }
 
     /**
      * Save Registration
@@ -24,33 +29,56 @@ class RegistrationController extends Controller
      */
     public function store()
     {
-        $this->registration( new Registration() );
-        return response()->json( $this->upsert() , Response::SUCCESS ) ;
+        $this->model( new Registration() )->upsert();
+
+        $results = empty( $this->getErrors() ) ? true : $this->getErrors() ;
+
+        return response()->json( $results , Response::SUCCESS ) ;
     }
 
     /**
-     * Getter and Setter for Registration Model
-     *
-     * @param Registration|null $registration
-     * @return Registration
+     * @param $id
+     * @return \Illuminate\Http\JsonResponse
      */
-    public function registration( Registration $registration = null )
+    public function show( $id )
     {
-        if( is_null( $registration ) ) return $this->registration;
-        else return $this->registration = $registration;
+
+        $this->model( Registration::find( $id ) );
+
+        if( is_null( $this->model() ) ) return response()->json( [ 'errors' => 'Not Found' ] , Response::NOT_FOUND );
+
+        return response()->json( $this->model() ) ;
     }
 
     /**
-     * @return bool
+     * @param $id
+     * @return \Illuminate\Http\JsonResponse
      */
-    public function upsert()
+    public function update( $id )
     {
-        foreach( $this->getRequest()->input() as $key => $value ){
-            if( \Illuminate\Database\Schema\Builder::hasColumn( $this->registration()->getTable() , $key ) ) {
-                $this->registration()->{$key} = $value;
-            }
-        }
-        return $this->registration()->save() ? true : false;
+        $this->model( Registration::find( $id ) );
+
+        if( is_null( $this->model() ) ) return response()->json( [ 'errors' => 'Not Found' ] , Response::NOT_FOUND );
+
+        $this->upsert();
+
+        $results = empty( $this->getErrors() ) ? true : $this->getErrors() ;
+
+        return response()->json( $results , Response::UPDATED ) ;
+    }
+
+    /**
+     * @param $id
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Exception
+     */
+    public function remove( $id )
+    {
+        $this->model( Registration::find( $id ) ) ;
+
+        if( is_null( $this->model() ) ) return response()->json( [ 'errors' => 'Not Found' ] , Response::NOT_FOUND );
+
+        return response()->json( $this->model()->delete() ) ;
     }
 
 }
